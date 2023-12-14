@@ -84,18 +84,18 @@ def generation_wrapper(c: int, n: int, scale: float) -> np.ndarray:
     # Fix the last part by using binary search 
     max_iter = 1000
 
-    min = max(scale * 0.8, 1.0)
-    max = scale * 1.2
+    min_v = max(scale * 0.8, 1.0)
+    max_v = scale * 1.2
 
     for _ in range(max_iter):
-        mid = (min + max) / 2
+        mid = (min_v + max_v) / 2
         masks = generate_masks(active_features, n, mid)
         if masks.shape[-1] == c:
             break
         elif masks.shape[-1] > c:
-            max = mid
+            max_v = mid
         else:
-            min = mid
+            min_v = mid
 
     if masks.shape[-1] != c:
         raise ValueError("generation_wrapper function failed to generate masks with "
