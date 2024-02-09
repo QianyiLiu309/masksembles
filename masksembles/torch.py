@@ -32,7 +32,9 @@ class Masksembles2D(nn.Module):
 
     """
 
-    def __init__(self, channels: int, n: int, scale: float, generate_masks: bool = True):
+    def __init__(
+        self, channels: int, n: int, scale: float, generate_masks: bool = True
+    ):
         super().__init__()
 
         self.channels = channels
@@ -89,7 +91,6 @@ class Masksembles1D(nn.Module):
     """
 
     def __init__(self, channels: int, n: int, scale: float):
-
         super().__init__()
 
         self.channels = channels
