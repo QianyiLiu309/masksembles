@@ -54,9 +54,6 @@ class Masksembles2D(nn.Module):
         batch = inputs.shape[0]
         x = torch.split(inputs.unsqueeze(1), batch // self.n, dim=0)
         x = torch.cat(x, dim=1).permute([1, 0, 2, 3, 4])
-        if self.masks.device != x.device:
-            print(f"masks device: {self.masks.device}, x device: {x.device}")
-            exit()
         x = x * self.masks.unsqueeze(1).unsqueeze(-1).unsqueeze(-1)
         x = torch.cat(torch.split(x, 1, dim=0), dim=1)
         return x.squeeze(0).float()
