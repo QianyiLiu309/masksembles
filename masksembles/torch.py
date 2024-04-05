@@ -87,16 +87,23 @@ class Masksembles1D(nn.Module):
 
     """
 
-    def __init__(self, channels: int, n: int, scale: float):
+    def __init__(
+        self, channels: int, n: int, scale: float, generate_masks: bool = True
+    ):
         super().__init__()
 
         self.channels = channels
         self.n = n
         self.scale = scale
 
-        masks = common.generation_wrapper(channels, n, scale)
-        masks = torch.from_numpy(masks)
-        self.masks = torch.nn.Parameter(masks, requires_grad=False).double()
+        if generate_masks:
+            masks = common.generation_wrapper(channels, n, scale)
+            masks = torch.from_numpy(masks)
+            self.masks = torch.nn.Parameter(masks, requires_grad=False).double()
+        else:
+            masks = np.zeros([n, channels])
+            masks = torch.from_numpy(masks)
+            self.masks = torch.nn.Parameter(masks, requires_grad=False).double()
 
     def forward(self, inputs):
         batch = inputs.shape[0]
