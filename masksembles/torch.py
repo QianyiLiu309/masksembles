@@ -112,3 +112,30 @@ class Masksembles1D(nn.Module):
         x = x * self.masks.unsqueeze(1)
         x = torch.cat(torch.split(x, 1, dim=0), dim=1)
         return x.squeeze(0)
+
+
+class Masksembles1DFixedCapacity(nn.Module):
+    def __init__(self, m: int, n: int, scale: float, generate_masks: bool = True):
+        super().__init__()
+
+        self.m = m
+        self.n = n
+        self.scale = scale
+        self.expected_size = int(m * scale * (1 - (1 - 1 / scale) ** n))
+
+        if generate_masks:
+            masks = common.generate_masks(m, n, scale)
+            masks = torch.from_numpy(masks)
+            self.masks = torch.nn.Parameter(masks, requires_grad=False).double()
+        else:
+            masks = np.zeros([n, self.expected_size])
+            masks = torch.from_numpy(masks)
+            self.masks = torch.nn.Parameter(masks, requires_grad=False).double()
+
+    def forward(self, inputs):
+        batch = inputs.shape[0]
+        x = torch.split(inputs.unsqueeze(1), batch // self.n, dim=0)
+        x = torch.cat(x, dim=1).permute([1, 0, 2])
+        x = x * self.masks.unsqueeze(1)
+        x = torch.cat(torch.split(x, 1, dim=0), dim=1)
+        return x.squeeze(0)
