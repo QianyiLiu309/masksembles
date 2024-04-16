@@ -111,7 +111,7 @@ class Masksembles1D(nn.Module):
         x = torch.cat(x, dim=1).permute([1, 0, 2])
         x = x * self.masks.unsqueeze(1)
         x = torch.cat(torch.split(x, 1, dim=0), dim=1)
-        return x.squeeze(0)
+        return x.squeeze(0).float()
 
 
 class Masksembles1DFixedCapacity(nn.Module):
@@ -138,4 +138,4 @@ class Masksembles1DFixedCapacity(nn.Module):
         x = torch.cat(x, dim=1).permute([1, 0, 2])
         x = x * self.masks.unsqueeze(1)
         x = torch.cat(torch.split(x, 1, dim=0), dim=1)
-        return x.squeeze(0)
+        return x.squeeze(0).float()
