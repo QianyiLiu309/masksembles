@@ -115,16 +115,18 @@ class Masksembles1D(nn.Module):
 
 
 class Masksembles1DFixedCapacity(nn.Module):
-    def __init__(self, m: int, n: int, scale: float, generate_masks: bool = True):
+    def __init__(
+        self, channels: int, n: int, scale: float, generate_masks: bool = True
+    ):
         super().__init__()
 
-        self.m = m
+        self.channels = channels
         self.n = n
         self.scale = scale
-        self.expected_size = int(m * scale * (1 - (1 - 1 / scale) ** n))
+        self.expected_size = int(channels * scale * (1 - (1 - 1 / scale) ** n))
 
         if generate_masks:
-            masks = common.generate_masks(m, n, scale)
+            masks = common.generate_masks(channels, n, scale)
             masks = torch.from_numpy(masks)
             self.masks = torch.nn.Parameter(masks, requires_grad=False).double()
         else:
