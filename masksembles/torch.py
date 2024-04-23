@@ -33,13 +33,19 @@ class Masksembles2D(nn.Module):
     """
 
     def __init__(
-        self, channels: int, n: int, scale: float, generate_masks: bool = True
+        self,
+        channels: int,
+        n: int,
+        scale: float,
+        generate_masks: bool = True,
+        enable_rescale: bool = False,
     ):
         super().__init__()
 
         self.channels = channels
         self.n = n
         self.scale = scale
+        self.enable_rescale = enable_rescale
 
         if generate_masks:
             masks = common.generation_wrapper(channels, n, scale)
@@ -55,6 +61,9 @@ class Masksembles2D(nn.Module):
         x = torch.split(inputs.unsqueeze(1), batch // self.n, dim=0)
         x = torch.cat(x, dim=1).permute([1, 0, 2, 3, 4])
         x = x * self.masks.unsqueeze(1).unsqueeze(-1).unsqueeze(-1)
+        if self.enable_rescale:
+            rescale_factor = self.masks.sum(dim=1).mean() / self.channels
+            x = x / rescale_factor
         x = torch.cat(torch.split(x, 1, dim=0), dim=1)
         return x.squeeze(0).float()
 
@@ -88,13 +97,19 @@ class Masksembles1D(nn.Module):
     """
 
     def __init__(
-        self, channels: int, n: int, scale: float, generate_masks: bool = True
+        self,
+        channels: int,
+        n: int,
+        scale: float,
+        generate_masks: bool = True,
+        enable_rescale: bool = False,
     ):
         super().__init__()
 
         self.channels = channels
         self.n = n
         self.scale = scale
+        self.enable_rescale = enable_rescale
 
         if generate_masks:
             masks = common.generation_wrapper(channels, n, scale)
@@ -110,13 +125,21 @@ class Masksembles1D(nn.Module):
         x = torch.split(inputs.unsqueeze(1), batch // self.n, dim=0)
         x = torch.cat(x, dim=1).permute([1, 0, 2])
         x = x * self.masks.unsqueeze(1)
+        if self.enable_rescale:
+            rescale_factor = self.masks.sum(dim=1).mean() / self.channels
+            x = x / rescale_factor
         x = torch.cat(torch.split(x, 1, dim=0), dim=1)
         return x.squeeze(0).float()
 
 
-class Masksembles1DFixedCapacity(nn.Module):
+class Masksembles1DFlexibleSize(nn.Module):
     def __init__(
-        self, channels: int, n: int, scale: float, generate_masks: bool = True
+        self,
+        channels: int,
+        n: int,
+        scale: float,
+        generate_masks: bool = True,
+        enable_rescale: bool = False,
     ):
         super().__init__()
 
@@ -124,6 +147,7 @@ class Masksembles1DFixedCapacity(nn.Module):
         self.n = n
         self.scale = scale
         self.expected_size = int(channels * scale * (1 - (1 - 1 / scale) ** n))
+        self.enable_rescale = enable_rescale
 
         if generate_masks:
             masks = common.generate_masks(channels, n, scale)
@@ -139,5 +163,8 @@ class Masksembles1DFixedCapacity(nn.Module):
         x = torch.split(inputs.unsqueeze(1), batch // self.n, dim=0)
         x = torch.cat(x, dim=1).permute([1, 0, 2])
         x = x * self.masks.unsqueeze(1)
+        if self.enable_rescale:
+            rescale_factor = self.masks.sum(dim=1).mean() / self.channels
+            x = x / rescale_factor
         x = torch.cat(torch.split(x, 1, dim=0), dim=1)
         return x.squeeze(0).float()
