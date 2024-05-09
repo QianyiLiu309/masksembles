@@ -105,7 +105,10 @@ class Masksembles1D(nn.Module):
         self.scale = scale
 
         if generate_masks:
-            masks = common.generation_wrapper(channels, n, scale)
+            if scale == 1:
+                masks = np.ones([n, channels])
+            else:
+                masks = common.generation_wrapper(channels, n, scale)
             masks = torch.from_numpy(masks)
             self.masks = torch.nn.Parameter(masks, requires_grad=False).double()
         else:
