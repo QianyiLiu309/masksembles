@@ -38,6 +38,7 @@ class Masksembles2D(nn.Module):
         n: int,
         scale: float,
         generate_masks: bool = True,
+        nested_masks: bool = False,
     ):
         super().__init__()
 
@@ -48,7 +49,12 @@ class Masksembles2D(nn.Module):
         if generate_masks:
             masks = common.generation_wrapper(channels, n, scale)
             masks = torch.from_numpy(masks)
+
+            if nested_masks:
+                for i in range(1, n):
+                    masks[i] = np.logical_or(masks[i], masks[i - 1])
             self.masks = torch.nn.Parameter(masks, requires_grad=False).double()
+
         else:
             masks = np.zeros([n, channels])
             masks = torch.from_numpy(masks)
@@ -97,6 +103,7 @@ class Masksembles1D(nn.Module):
         n: int,
         scale: float,
         generate_masks: bool = True,
+        nested_masks: bool = False,
     ):
         super().__init__()
 
@@ -109,7 +116,11 @@ class Masksembles1D(nn.Module):
                 masks = np.ones([n, channels])
             else:
                 masks = common.generation_wrapper(channels, n, scale)
+
             masks = torch.from_numpy(masks)
+            if nested_masks:
+                for i in range(1, n):
+                    masks[i] = np.logical_or(masks[i], masks[i - 1])
             self.masks = torch.nn.Parameter(masks, requires_grad=False).double()
         else:
             masks = np.zeros([n, channels])
